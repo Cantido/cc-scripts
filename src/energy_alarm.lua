@@ -1,4 +1,4 @@
-local energy_alarm = {
+local energyAlarm = {
   _NAME        = 'Rosa\'s Induction Matrix Energy Alarm',
   _VERSION     = '1.0.0',
   _DESCRIPTION = [[
@@ -32,7 +32,9 @@ local energy_alarm = {
   ]]
 }
 
-print("Rosa's Induction Matrix Energy Alarm starting!")
+local logger = require("logger")
+
+logger.logStartup(energyAlarm)
 
 local chatname = os.computerLabel()
 local interval = 300 -- five minutes
@@ -43,9 +45,9 @@ local chatbox = peripheral.find("chatBox") or error("Chat Box not connected")
 local capacity = matrix.getMaxEnergy()
 local previousStored = matrix.getEnergy()
 
-print("Waiting 10 seconds to check energy fill rate...")
+logger.log("Waiting 10 seconds to check energy fill rate...")
 os.sleep(10)
-print("Done waiting. Entering main loop.")
+logger.log("Done waiting. Entering main loop.")
 
 while true do
     local stored = matrix.getEnergy()
@@ -54,7 +56,7 @@ while true do
     local isFilling = (stored - previousStored) > 0
 
     if isFilling or isFull then
-        print("Matrix is filling or full, supressing chat.")
+        logger.log("Matrix is filling or full, supressing chat.")
     else
         if storedFrac < 0.10 then
             chatbox.sendMessage("Induction Matrix has less than ten percent energy remaining, and it's still draining! Fix it quickly!", chatname)

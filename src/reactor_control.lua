@@ -35,7 +35,7 @@ local rcp = {
 
 local logger = require("logger")
 
-logger.log("Rosa's Reactor Control Program is now active")
+logger.logStartup(rcp)
 
 local reactor = peripheral.find("BiggerReactors_Reactor")
 

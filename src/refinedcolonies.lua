@@ -1,4 +1,4 @@
-local logger = {
+local refinedColonies = {
   _VERSION     = '1.0.0',
   _NAME        = 'Rosa\'s Refined Colonies Program',
   _DESCRIPTION = [[
@@ -133,24 +133,24 @@ function printReport(reports)
         end
     end
 
-    print(string.format("Checking requests at %s...", os.date("!%c")))
+    logger.log(string.format("Checking requests at %s...", os.date("!%c")))
 
     if #fulfilledNames > 0 then
-        print("- Fulfilled requests:")
+        logger.log("- Fulfilled requests:")
         for _, name in pairs(fulfilledNames) do
-            print("  - " .. name)
+          logger.log("  - " .. name)
         end
     else
-        print("- No fulfilled requests")
+        logger.log("- No fulfilled requests")
     end
 
     if #unfulfilledNames > 0 then
-        print("- Unfulfilled requests:")
+        logger.log("- Unfulfilled requests:")
         for _, name in pairs(unfulfilledNames) do
-            print("  - " .. name)
+            logger.log("  - " .. name)
         end
     else
-        print("- No unfulfilled requests")
+        logger.log("- No unfulfilled requests")
     end
 end
 
@@ -193,6 +193,8 @@ function printDailyReport()
     message = textutils.serializeJSON(message)
     chatbox.sendFormattedMessage(message, chatname, nil, nil, chatrange)
 end
+
+logger.logStartup(refinedColonies)
 
 while true do
     local reports = {}
