@@ -45,9 +45,40 @@ local logger = require("logger")
 local pretty = require("cc.pretty")
 local ccstrings = require("cc.strings")
 
-local interval = 60
+settings.define("refcol.interval", {
+    description = [[
+        The number of seconds to wait between fulfilling requests.
+        If you set this too low, then the system may craft too many items
+        requested by the colony if autocrafting is taking too long.
+        Must be greater than 0.
+    ]],
+    default = 60,
+    type = number
+})
+
+settings.define("refcol.report.radius", {
+    description = [[
+        The radius, in blocks, that this program should broadcast the daily
+        request report. Set this to a range where players within the colony
+        can see the report, but where players outside the colony won't get
+        spammed. Must be greater than 0.
+    ]],
+    default = 200,
+    type = number
+})
+
+local interval = settings.get("refcol.interval")
+-- TODO: pull the name of the colony instead of hard-coding
 local chatname = "Prarietown"
-local chatrange = 196
+local chatrange = settings.get("refcol.report.radius")
+
+if interval <= 0 then
+    error("`refcol.interval` must be greater than 0.")
+end
+
+if chatrange <= 0 then
+    error("`refcol.report.radius` must be greater than 0.")
+end
 
 local colony = peripheral.find("colonyIntegrator") or error("This program requires a MineColonies integration peripheral.")
 local storage = peripheral.find("rsBridge") or error("This program requires a Refined Storage integration peripheral.")
