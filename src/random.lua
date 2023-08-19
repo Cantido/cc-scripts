@@ -1,6 +1,6 @@
 local random = {
   _VERSION     = '1.0.0',
-  _NAME        = 'Rosa's Pseudorandom Number Generator',
+  _NAME        = 'Rosa\'s Pseudorandom Number Generator',
   _DESCRIPTION = 'Generates pseudorandom numbers.',
   _URL         = 'https://github.com/Cantido/cc-scripts',
   _LICENSE     = [[
@@ -38,7 +38,7 @@ R.state = os.epoch() % modulus
 
 function R.nextRandom(max)
     R.state = R.state * multiplier % modulus
-    
+
     if max == nil then
         return R.state
     else

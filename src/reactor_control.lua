@@ -1,6 +1,6 @@
 local rcp = {
   _VERSION     = '1.0.0',
-  _NAME        = 'Rosa's Reactor Control Program',
+  _NAME        = 'Rosa\'s Reactor Control Program',
   _DESCRIPTION = [[
     Adjusts a BiggerReactor reactor's control rods to maintain power in storage.
     When stored power is above 80%, the reactor is slowed down slightly,
@@ -42,7 +42,7 @@ local reactor = peripheral.find("BiggerReactors_Reactor")
 function getFillLevel(reactor)
     local battery = reactor.battery()
     local coolantTank = reactor.coolantTank()
-    
+
     if battery ~= nil then
         local capacity = battery.capacity()
         return battery.stored() / capacity
@@ -59,22 +59,22 @@ function changeControlRods(diff)
     local newLevel = level + diff
     reactor.setAllControlRodLevels(newLevel)
 end
-    
+
 while reactor.connected() do
     if reactor.active() then
         local fractionStored = getFillLevel(reactor)
 
         if fractionStored > 0.80 then
-            changeControlRods(0.1)            
+            changeControlRods(0.1)
         elseif fractionStored < 0.20 then
             changeControlRods(-0.1)
         end
-        
+
         logger.log(string.format("Control rods currently at %f%%", reactor.getControlRod(0).level()))
     else
         logger.log("Reactor is turned off, skipping battery check")
     end
-    
+
     os.sleep(10)
 end
 

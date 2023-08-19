@@ -1,6 +1,6 @@
 local logger = {
   _VERSION     = '1.0.0',
-  _NAME        = 'Rosa's Refined Colonies Program',
+  _NAME        = 'Rosa\'s Refined Colonies Program',
   _DESCRIPTION = [[
     Bridges a MineColonies warehouse to a Refined Storage network.
 
@@ -62,8 +62,8 @@ local dailyItemReport = {
 -- the report won't happen til midnight tonight
 local previousDailyReportDay = os.day()
 
-function fulfillRequest(request)        
-    local mcItem = request.items[1]       
+function fulfillRequest(request)
+    local mcItem = request.items[1]
     local rsItem = storage.getItem({name = mcItem.name})
     local isCraftable = storage.isItemCraftable({name = mcItem.name})
     local craftedAmount = 0
@@ -72,32 +72,32 @@ function fulfillRequest(request)
     local desiredAmount = request.count
     local storedAmount = 0
     local exportedAmount = 0
-    
+
     if rsItem ~= nil then
         storedAmount = rsItem.amount
     end
-    
+
     if isCraftable then
         local countToCraft = desiredAmount - storedAmount
-                
-        if countToCraft > 0 then       
+
+        if countToCraft > 0 then
             craftingSuccess = storage.craftItem({name = mcItem.name, count = countToCraft})
-            
+
             if craftingSuccess then
                 while storage.isItemCrafting(mcItem.name) do
                     os.sleep(1)
-                end 
-                 
-                storedAmount = storage.getItem({name = mcItem.name}).amount  
+                end
+
+                storedAmount = storage.getItem({name = mcItem.name}).amount
                 craftedAmount = countToCraft
             end
         end
     end
-        
+
     if desiredAmount <= storedAmount then
         exportedAmount = storage.exportItem({name = mcItem.name, count = desiredAmount}, "top")
     end
-    
+
     return {
         requestId = request.id,
         name = mcItem.name,
@@ -113,28 +113,28 @@ end
 function printReport(reports)
     local fulfilledNames = {}
     local unfulfilledNames = {}
-    
-    
+
+
     for _, row in pairs(reports) do
         local fulfilled = row.desiredAmount == row.exportedAmount
-        
+
         local displayName = row.name
         displayName = ccstrings.ensure_width(displayName, 50)
         displayName = string.format("%ix %s", row.desiredAmount, displayName)
-        
+
         if row.craftedAmount > 0 then
             displayName = string.format("%s (crafted %i)", displayName, row.craftedAmount)
         end
-    
+
         if fulfilled then
             table.insert(fulfilledNames, displayName)
         else
-            table.insert(unfulfilledNames, displayName)    
-        end          
+            table.insert(unfulfilledNames, displayName)
+        end
     end
-    
+
     print(string.format("Checking requests at %s...", os.date("!%c")))
-    
+
     if #fulfilledNames > 0 then
         print("- Fulfilled requests:")
         for _, name in pairs(fulfilledNames) do
@@ -143,12 +143,12 @@ function printReport(reports)
     else
         print("- No fulfilled requests")
     end
-   
-    if #unfulfilledNames > 0 then 
+
+    if #unfulfilledNames > 0 then
         print("- Unfulfilled requests:")
         for _, name in pairs(unfulfilledNames) do
             print("  - " .. name)
-        end        
+        end
     else
         print("- No unfulfilled requests")
     end
@@ -165,13 +165,13 @@ function printDailyReport()
     local message = {}
 
     table.insert(message, "Time for the daily Refined Colonies crafting report!\n")
-    
+
     local fulfilledCount = 0;
-    
+
     for _, _ in pairs(dailyItemReport.fulfilledRequests) do
         fulfilledCount = fulfilledCount + 1
     end
-    
+
     if fulfilledCount > 0 then
         table.insert(message, string.format("Today, I fulfilled %i requests and moved a total of:\n", fulfilledCount))
         for name, count in pairs(dailyItemReport.itemCounts) do
@@ -184,12 +184,12 @@ function printDailyReport()
                         count = count
                     }
                 }
-            }) 
+            })
         end
     else
         table.insert(message, "No requests were fulfilled today :(")
     end
-    
+
     message = textutils.serializeJSON(message)
     chatbox.sendFormattedMessage(message, chatname, nil, nil, chatrange)
 end
@@ -201,11 +201,11 @@ while true do
         if report.isFulfilled then
             addToDailyReport(report)
         end
-        table.insert(reports, report)   
+        table.insert(reports, report)
     end
-    
+
     printReport(reports)
-    
+
     local today = os.day()
     if previousDailyReportDay < today then
         printDailyReport()
@@ -215,6 +215,6 @@ while true do
             fulfilledRequests = {}
         }
     end
-    
+
     os.sleep(interval)
 end

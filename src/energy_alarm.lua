@@ -1,5 +1,5 @@
 local energy_alarm = {
-  _NAME        = 'Rosa's Induction Matrix Energy Alarm',
+  _NAME        = 'Rosa\'s Induction Matrix Energy Alarm',
   _VERSION     = '1.0.0',
   _DESCRIPTION = [[
     Monitors the stored energy and fill rate of a Mekanism Induction Matrix,
@@ -52,7 +52,7 @@ while true do
     local storedFrac = stored / capacity
     local isFull = storedFrac > 0.99
     local isFilling = (stored - previousStored) > 0
-    
+
     if isFilling or isFull then
         print("Matrix is filling or full, supressing chat.")
     else
@@ -62,6 +62,6 @@ while true do
             chatbox.sendMessage("Induction Matrix is at less than fifty percent capacity and draining, is the power grid overloaded?", chatname)
         end
     end
-    
+
     sleep(interval)
 end
