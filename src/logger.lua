@@ -1,6 +1,6 @@
 local logger = {
   _VERSION     = '1.0.0',
-  _NAME        = 'Rosa's Logger',
+  _NAME        = 'Rosa\'s Logger',
   _DESCRIPTION = 'Prints timestamped messages to the console.',
   _URL         = 'https://github.com/Cantido/cc-scripts',
   _LICENSE     = [[
@@ -29,9 +29,15 @@ local logger = {
   ]]
 }
 
+
+
 function logger.log(message)
     local now = os.date("!%FT%TZ")
     print(string.format("[%s] %s", now, message))
+end
+
+function logger.logStartup(programData)
+    logger.log(string.format("%s v%s is now active.", programData._NAME, programData._VERSION))
 end
 
 return logger
