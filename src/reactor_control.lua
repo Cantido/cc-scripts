@@ -1,4 +1,4 @@
-local logger = {
+local rcp = {
   _VERSION     = '1.0.0',
   _NAME        = 'Rosa's Reactor Control Program',
   _DESCRIPTION = [[
