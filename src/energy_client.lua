@@ -12,38 +12,38 @@ peripheral.find("modem", rednet.open)
 
 function getVersion(id)
     rednet.send(id, "getVersion", "energy_storage")
-    
+
     local _, message = rednet.receive("energy_storage", timeout)
-    
+
     if message == nil then
         error("Timeout")
     end
-    
+
     pretty.pretty_print(message)
-    
+
     local serverVersion = v(message.response)
-    
+
     return serverVersion
 end
 
 function getEnergy(id)
     rednet.send(id, "getEnergy", "energy_storage")
-    
-    local _, message = rednet.receive("energy_storage", timeout)    
+
+    local _, message = rednet.receive("energy_storage", timeout)
     return message.response
 end
 
 function getName(id)
     rednet.send(id, "getName", "energy_storage")
-    
+
     local _, message = rednet.receive("energy_storage", timeout)
-    
-    return message.response  
-end    
+
+    return message.response
+end
 
 function getEnergyReport()
     local hosts = getCompatibleHosts()
-    
+
     for _, host in pairs(hosts) do
         local energy = getEnergy(host)
         local name = getName(host)
@@ -53,9 +53,9 @@ end
 
 function getCompatibleHosts()
     local hosts = {rednet.lookup("energy_storage")}
-    
+
     local compatibleHosts = {}
-    
+
     for _, host in pairs(hosts) do
         local serverVersion = getVersion(host)
         print("checking version "..tostring(serverVersion))
@@ -63,9 +63,9 @@ function getCompatibleHosts()
             table.insert(compatibleHosts, host)
         end
     end
-    
-    return compatibleHosts
-end        
 
-getEnergyReport()           
+    return compatibleHosts
+end
+
+getEnergyReport()
 print("end of report")
