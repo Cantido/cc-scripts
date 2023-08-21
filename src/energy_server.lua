@@ -39,9 +39,9 @@ local api = {}
 
 function api.getReport(message, state)
     id = os.getComputerID()
-    name = os.getComputerLabel()
-    stored = state.energy_storage.getEnergy()
-    capacity = state.energy_storage.getEnergyCapacity()
+    name = os.getComputerLabel() or string.format("#%i", id)
+    stored = state.energyStorage.getEnergy()
+    capacity = state.energyStorage.getEnergyCapacity()
     return {
         query = "getReport",
         response = {

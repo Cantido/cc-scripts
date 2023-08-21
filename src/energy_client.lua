@@ -29,7 +29,7 @@ local function getVersion(id)
         error("Timeout")
     end
 
-    return message.response
+    return v(message.response)
 end
 
 local function getCompatibleHosts()
