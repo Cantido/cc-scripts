@@ -35,38 +35,55 @@ local v = require("semver")
 local logger = require("logger")
 local pretty = require("cc.pretty")
 
-function listen(storage, serverVersion)
+local api = {}
+
+function api.getReport(message, state)
+    id = os.getComputerID()
+    name = os.getComputerLabel()
+    stored = state.energy_storage.getEnergy()
+    capacity = state.energy_storage.getEnergyCapacity()
+    return {
+        query = "getReport",
+        response = {
+            id = id,
+            name = name,
+            stored = stored,
+            capacity = capacity
+        }
+    }
+end
+
+function api.getVersion(message, state)
+    return {
+        query = "getVersion",
+        response = tostring(state.serverVersion)
+    }
+end
+
+function listen(state)
     while rednet.isOpen() do
         local id, message = rednet.receive("energy_storage")
 
         pretty.pretty_print(message)
 
-        if message == "getEnergy" then
-            print("Responding to getEnergy")
-            local response = {
-                query = "getEnergy",
-                response = {
-                    stored: storage.getEnergy(),
-                    capacity: storage.getEnergyCapacity()
-                }
-            }
-            rednet.send(id, response, "energy_storage")
-        elseif message == "getName" then
-            print("responding to getName")
-            local response = {
-                query = "getName",
-                response = os.getComputerLabel()
-            }
-            rednet.send(id, response, "energy_storage")
-        elseif message == "getVersion" then
-            print("responding to getVersion")
-            local response = {
-                query = "getVersion",
-                response = tostring(serverVersion)
-            }
+        if message == nil or id == nil then
+            error("Received nil message from the server.")
+        end
+
+        local handler = api[message.method]
+
+        if handler == nil then
+            rednet.send(id, "Unknown function", "energy_storage")
+        else
+            local response = handler(message, state)
 
             pretty.pretty_print(response)
-            rednet.send(id, response, "energy_storage")
+
+            if response ~= nil then
+                rednet.send(id, response, "energy_storage")
+            else
+                error("Received nil response from the server")
+            end
         end
     end
 end
@@ -75,12 +92,17 @@ function run()
     logger.logStartup(energyServer)
 
     local serverVersion = v(energyServer._VERSION)
-    local storage = peripheral.wrap("energy_storage") or error("This program requires energy storage")
+    local storage = peripheral.find("energy_storage") or error("This program requires energy storage")
+
+    local state = {
+        serverVersion = serverVersion,
+        energyStorage = storage
+    }
 
     peripheral.find("modem", rednet.open)
-    rednet.host("energy_storage", os.getComputerLabel())
+    rednet.host("energy_storage", os.getComputerLabel() or "host")
 
-    listen(storage, serverVersion)
+    listen(state)
 end
 
 run()

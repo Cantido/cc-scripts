@@ -8,10 +8,8 @@ print("Rosa's Energy Client v" .. tostring(clientVersion))
 
 peripheral.find("modem", rednet.open)
 
-
-
-function getVersion(id)
-    rednet.send(id, "getVersion", "energy_storage")
+local function getReport(id)
+    rednet.send(id, { method = "getReport" }, "energy_storage")
 
     local _, message = rednet.receive("energy_storage", timeout)
 
@@ -19,39 +17,22 @@ function getVersion(id)
         error("Timeout")
     end
 
-    pretty.pretty_print(message)
-
-    local serverVersion = v(message.response)
-
-    return serverVersion
-end
-
-function getEnergy(id)
-    rednet.send(id, "getEnergy", "energy_storage")
-
-    local _, message = rednet.receive("energy_storage", timeout)
     return message.response
 end
 
-function getName(id)
-    rednet.send(id, "getName", "energy_storage")
+local function getVersion(id)
+    rednet.send(id, { method = "getVersion" }, "energy_storage")
 
     local _, message = rednet.receive("energy_storage", timeout)
 
-    return message.response
-end
-
-function getEnergyReport()
-    local hosts = getCompatibleHosts()
-
-    for _, host in pairs(hosts) do
-        local energy = getEnergy(host)
-        local name = getName(host)
-        print(string.format("Computer #%i [%s] - %s", host, name, tostring(energy)))
+    if message == nil then
+        error("Timeout")
     end
+
+    return message.response
 end
 
-function getCompatibleHosts()
+local function getCompatibleHosts()
     local hosts = {rednet.lookup("energy_storage")}
 
     local compatibleHosts = {}
@@ -67,5 +48,23 @@ function getCompatibleHosts()
     return compatibleHosts
 end
 
-getEnergyReport()
+local function reportAll()
+    local hosts = getCompatibleHosts()
+
+    for _, host in pairs(hosts) do
+        local report = getReport(host)
+        local percent = report.stored / report.capacity * 100
+        print(string.format("%s: %d%%", report.name, percent))
+    end
+end
+
+
+
+reportAll()
 print("end of report")
+
+return {
+    getReport = getReport,
+    getVersion = getVersion,
+    getCompatibleHosts = getCompatibleHosts
+}
