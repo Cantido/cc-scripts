@@ -38,57 +38,70 @@ local pretty = require("cc.pretty")
 local api = {}
 
 function api.getReport(message, state)
-    id = os.getComputerID()
-    name = os.getComputerLabel() or string.format("#%i", id)
-    stored = state.energyStorage.getEnergy()
-    capacity = state.energyStorage.getEnergyCapacity()
+    local stored = state.energyStorage.getEnergy()
+    local capacity = state.energyStorage.getEnergyCapacity()
     return {
-        query = "getReport",
-        response = {
-            id = id,
-            name = name,
-            stored = stored,
-            capacity = capacity
-        }
+        stored = stored,
+        capacity = capacity
     }
 end
 
-function api.getVersion(message, state)
-    return {
-        query = "getVersion",
-        response = tostring(state.serverVersion)
-    }
+function api.ping(message, state)
+    return {}
 end
 
-function listen(state)
-    while rednet.isOpen() do
-        local id, message = rednet.receive("energy_storage")
+local server = {}
 
-        pretty.pretty_print(message)
+function server.handle(id, message, state)
+    pretty.pretty_print(message)
 
-        if message == nil or id == nil then
-            error("Received nil message from the server.")
-        end
+    if message == nil or id == nil then
+        error("Received nil message from the server.")
+    end
 
-        local handler = api[message.method]
+    local method = message.method
 
-        if handler == nil then
-            rednet.send(id, "Unknown function", "energy_storage")
+    local handler = api[method]
+
+    local response = {
+        method = method,
+        computerID = os.getComputerID(),
+        computerName = os.getComputerLabel() or string.format("#%i", id),
+        serverVersion = tostring(state.serverVersion),
+    }
+
+    if handler == nil then
+        response.error = "unknown method"
+        pretty.pretty_print(response)
+        rednet.send(id, response, "energy_storage")
+    elseif not(v(message.version) ^ state.serverVersion) then
+        response.error = "incompatible API version"
+        pretty.pretty_print(response)
+        rednet.send(id, response, "energy_storage")
+    else
+        local body = handler(message, state)
+
+        response.body = body
+
+        pretty.pretty_print(response)
+
+        if response ~= nil then
+            rednet.send(id, response, "energy_storage")
         else
-            local response = handler(message, state)
-
-            pretty.pretty_print(response)
-
-            if response ~= nil then
-                rednet.send(id, response, "energy_storage")
-            else
-                error("Received nil response from the server")
-            end
+            error("Received nil response from the server")
         end
     end
 end
 
-function run()
+function server.listen(state)
+    while rednet.isOpen() do
+        local id, message = rednet.receive("energy_storage")
+
+        server.handle(id, message, state)
+    end
+end
+
+function server.run()
     logger.logStartup(energyServer)
 
     local serverVersion = v(energyServer._VERSION)
@@ -102,9 +115,10 @@ function run()
     peripheral.find("modem", rednet.open)
     rednet.host("energy_storage", os.getComputerLabel() or "host")
 
-    listen(state)
+    server.listen(state)
+
+    error("RedNet connection closed")
 end
 
-run()
+server.run()
 
-error("RedNet connection closed")

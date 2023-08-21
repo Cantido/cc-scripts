@@ -8,28 +8,33 @@ print("Rosa's Energy Client v" .. tostring(clientVersion))
 
 peripheral.find("modem", rednet.open)
 
-local function getReport(id)
-    rednet.send(id, { method = "getReport" }, "energy_storage")
+local function callMethod(dest, name, args)
+    local request = {
+        method = name,
+        version = tostring(clientVersion)
+    }
 
-    local _, message = rednet.receive("energy_storage", timeout)
-
-    if message == nil then
-        error("Timeout")
+    if args ~= nil then
+        request.args = args
     end
 
-    return message.response
+    rednet.send(dest, request, "energy_storage")
+
+    local _, response = rednet.receive("energy_storage", timeout)
+
+    if response == nil then
+        return { error = "Timeout" }
+    end
+
+    return response
 end
 
-local function getVersion(id)
-    rednet.send(id, { method = "getVersion" }, "energy_storage")
+local function getReport(id)
+    return callMethod(id, "getReport")
+end
 
-    local _, message = rednet.receive("energy_storage", timeout)
-
-    if message == nil then
-        error("Timeout")
-    end
-
-    return v(message.response)
+local function ping(id)
+    return callMethod(id, "ping")
 end
 
 local function getCompatibleHosts()
@@ -38,9 +43,8 @@ local function getCompatibleHosts()
     local compatibleHosts = {}
 
     for _, host in pairs(hosts) do
-        local serverVersion = getVersion(host)
-        print("checking version "..tostring(serverVersion))
-        if clientVersion ^ serverVersion then
+        local response = ping(host)
+        if response.error == nil then
             table.insert(compatibleHosts, host)
         end
     end
@@ -53,8 +57,8 @@ local function reportAll()
 
     for _, host in pairs(hosts) do
         local report = getReport(host)
-        local percent = report.stored / report.capacity * 100
-        print(string.format("%s: %d%%", report.name, percent))
+        local percent = report.body.stored / report.body.capacity * 100
+        print(string.format("%s: %d%%", report.computerName, percent))
     end
 end
 
@@ -66,5 +70,5 @@ print("end of report")
 return {
     getReport = getReport,
     getVersion = getVersion,
-    getCompatibleHosts = getCompatibleHosts
+    getCompatibleHosts = getCompatibleHosts,
 }
